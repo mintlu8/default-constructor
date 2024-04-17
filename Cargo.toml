@@ -1,6 +1,6 @@
 [package]
 name = "default-constructor"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 
 authors = ["Mincong Lu <mintlux667@gmail.com>"]
