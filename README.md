@@ -35,23 +35,38 @@ Student {
 
 The meta constructor macro allows you to define your own macro with
 custom configurations.
-See documentation on `meta_default_constructor!` for detail.
+
+See documentation on `meta_default_constructor!` for details.
 
 ## `InferInto`
 
 InferInto allows the user to bypass the orphan rule to create conversions.
 
-By default we provide `i32` -> `f32` and `i64` -> `f64` conversions
-in addition to the standard `From` and `Into`.
+By default we provide `i32` (integer literal) to all numeric types
+and `i64` -> `f64` in addition to the standard `From` and `Into`.
 
 If multiple conversion paths are found, the conversion will fail,
 thus failing the `infer_construct` macro.
 
 ## Missing Features
 
-[ ] Allow paths as type name.
-[ ] Tuple structs support.
+- [ ] Allow paths as type name.
+- [ ] Tuple structs support.
 
 ## Possible Features
 
-[ ] Generics parsing.
+- [ ] Generics parsing.
+
+## License
+
+License under either of
+
+Apache License, Version 2.0 (LICENSE-APACHE or <http://www.apache.org/licenses/LICENSE-2.0>)
+MIT license (LICENSE-MIT or <http://opensource.org/licenses/MIT>)
+at your option.
+
+## Contribution
+
+Contributions are welcome!
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without any additional terms or conditions.
