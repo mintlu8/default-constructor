@@ -21,12 +21,12 @@ construct! {
 }
 ```
 
-This converts to
+This expands to
 
 ```rust
 Student {
     name: Into::into("Timmy"),
-    age: Into::into(10.into()),
+    age: Into::into(10),
     ..Default::default()
 }
 ```
