@@ -1,4 +1,6 @@
-use default_constructor::{construct, infer_construct, meta_default_constructor};
+use std::{borrow::Cow, marker::PhantomData, rc::Rc, sync::Arc};
+
+use default_constructor::{infer_construct, meta_default_constructor};
 
 #[derive(Default)]
 pub struct B {
@@ -16,6 +18,15 @@ pub struct C<T> {
     b: f32,
     c: char,
     t: T
+}
+
+#[derive(Default)]
+pub struct Lifetime<'a> {
+    p: PhantomData<&'a ()>
+}
+#[derive(Default)]
+pub struct ComplexWeirdness<'a, 'b, A, B> {
+    p: PhantomData<(&'a A, &'b B)>
 }
 
 mod a {
@@ -36,13 +47,11 @@ use a::A;
 
 fn do_thing() {
 
-    let _: A = construct!(
-        A {
-            a: "hello",
-            b: 1i16,
-            d: [1, 2, 3, 4]
-        }
-    );
+    let _: A = {
+    meta_default_constructor!(@ty[::std::convert::Into::into]A {
+        a:"hello",b:1i16,d:[1,2,3,4]
+    })
+};
     let _: A = infer_construct!(
         A {
             a: "hello",
@@ -70,7 +79,7 @@ fn do_thing() {
                 b: 1,
                 d: [1, 2, 3, 4]
             },
-            f: box A {
+            f: @box A {
                 b: 1,
                 d: [1, 2, 3, 4]
             }
@@ -119,11 +128,31 @@ fn do_thing() {
 
     // or specify it
     let _ = infer_construct!(
-        C[i64] {
+        C::<i64> {
             a: "hello",
             b: 1i16,
             t: 69
         }
+    );
+
+    // lifetimes and fields
+    let _ = infer_construct!(
+        Lifetime::<'static> {}
+    );
+
+    // lifetimes and fields
+    let _ = infer_construct!(
+        Lifetime::<'static,> {}
+    );
+
+    // lifetimes and fields
+    let _ = infer_construct!(
+        ComplexWeirdness::<'static, 'static, A, B> {}
+    );
+    
+    // lifetimes and fields
+    let _ = infer_construct!(
+        ComplexWeirdness::<'static, 'static, A, B,> {}
     );
 
     meta_default_constructor!(
@@ -138,3 +167,23 @@ fn do_thing() {
     );
 }
 
+
+
+#[derive(Default)]
+pub struct E {
+    a: Box<String>,
+    b: Rc<String>,
+    c: Arc<String>,
+    d: Option<String>,
+}
+
+fn test_effect() {
+    let _ = infer_construct! {
+        E {
+            a: @boxed "The",
+            b: @rc "Rust",
+            c: @arc "Programming".to_owned(),
+            d: @some Cow::Borrowed("Language"),
+        }
+    };
+}

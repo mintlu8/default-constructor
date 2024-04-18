@@ -74,14 +74,12 @@ and `i64` -> `f64` in addition to the standard `From` and `Into`.
 If multiple conversion paths are found, the conversion will fail,
 thus failing the `infer_construct` macro.
 
-## Missing Features
-
-- [x] Allow paths as type names.
-- [ ] Tuple struct support.
-
 ## Possible Features
 
-- [ ] Generics parsing.
+- [x] Allow paths as type names.
+- [x] Generics parsing.
+- [ ] Generics parsing in nested constructors.
+- [ ] Tuple struct support.
 
 ## License
 

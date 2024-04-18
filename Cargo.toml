@@ -1,6 +1,6 @@
 [package]
 name = "default-constructor"
-version = "0.1.3"
+version = "0.2.0"
 edition = "2021"
 
 authors = ["Mincong Lu <mintlux667@gmail.com>"]
@@ -14,3 +14,7 @@ default construction and field conversion.
 """
 
 keywords = ["constructor", "default", "macro"]
+
+[features]
+default = ["std"]
+std = []
