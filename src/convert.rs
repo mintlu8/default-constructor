@@ -53,4 +53,4 @@ macro_rules! std_convert {
     };
 }
 
-std_convert!(u8, u16, u32, u64, i8, i16, f32);
+std_convert!(u8, u16, u32, u64, usize, u128, i8, i16, f32);

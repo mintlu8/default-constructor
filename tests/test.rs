@@ -93,6 +93,21 @@ fn do_thing() {
         }
     );
 
+
+    let _: B = infer_construct!(
+        B {
+            a: "hello",
+            b: 1i16,
+            e: {A {
+                ..Default::default()
+            }},
+            f: a::A {
+                b: 1,
+                d: [1, 2, 3, 4]
+            }
+        }
+    );
+
     // generics work with inference
     let _: C<i32> = infer_construct!(
         C {

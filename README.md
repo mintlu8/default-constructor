@@ -17,6 +17,10 @@ construct! {
     Student {
         name: "Timmy",
         age: 10,
+        father: Parent {
+            name: "Tommy",
+            age: 42
+        }
     }
 }
 ```
@@ -27,7 +31,30 @@ This expands to
 Student {
     name: Into::into("Timmy"),
     age: Into::into(10),
+    father: construct! {
+        Parent {
+            name: "Tommy",
+            age: 42
+        }
+    }
     ..Default::default()
+}
+```
+
+Note the macro is recursive on nested structs declarations,
+if the behavior is not desired, wrap nested structs in parenthesis
+or brackets.
+
+```rust
+construct! {
+    Student {
+        name: "Timmy",
+        age: 10,
+        father: { Parent {
+            name: "Tommy",
+            age: 42
+        }}
+    }
 }
 ```
 

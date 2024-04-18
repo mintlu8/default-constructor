@@ -85,6 +85,23 @@ macro_rules! meta_default_constructor {
         )
     };
 
+    // special handle blocks, since empty path is matched later
+    (
+        [$func: expr]
+        [$($ty: tt)*]
+        $([$($generics: tt)*])?
+        {$field: ident: $block: block $(, $($tt: tt)*)?} 
+        {$($out_field: ident: $out_expr: expr),*} 
+    ) => {
+        $crate::meta_default_constructor!(
+            [$func]
+            [$($ty)*]
+            $([$($generics)*])?
+            {$($($tt)*)?} 
+            {$($out_field: $out_expr,)* $field: $block} 
+        )
+    };
+
     // Nested structs
     (
         [$func: expr]
@@ -126,6 +143,32 @@ macro_rules! meta_default_constructor {
                 {$($fields)*}
                 {}
             )} 
+        )
+    };
+
+    // Supports the box syntax
+    (
+        [$func: expr]
+        [$($ty: tt)*]
+        $([$($generics: tt)*])?
+        {$field: ident: box ::$($ty2: ident)::* {$($fields: tt)*} $(, $($tt: tt)*)?} 
+        {$($out_field: ident: $out_expr: expr),*} 
+    ) => {
+        $crate::meta_default_constructor!(
+            [$func]
+            [$($ty)*]
+            $([$($generics)*])?
+            {$($($tt)*)?} 
+            {$($out_field: $out_expr,)* $field: 
+                ::std::boxed::Box::new(
+                    $crate::meta_default_constructor!(
+                        [$func]
+                        [::$($ty2)::*]
+                        {$($fields)*}
+                        {}
+                    )
+                )
+            } 
         )
     };
 
