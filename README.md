@@ -50,7 +50,7 @@ thus failing the `infer_construct` macro.
 
 ## Missing Features
 
-- [ ] Allow paths as type name.
+- [x] Allow paths as type name.
 - [ ] Tuple structs support.
 
 ## Possible Features

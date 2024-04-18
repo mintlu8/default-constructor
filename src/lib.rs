@@ -49,20 +49,36 @@ macro_rules! meta_default_constructor {
     ) => {
         {
             $($imports;)*
-            $crate::meta_default_constructor!($($tt)* {})
+            $crate::meta_default_constructor!($($tt)*)
         }
     };
 
     // Pad output
     (
         [$func: expr]
-        $ty: ident
+        ::$($ty: ident)::*
         $([$($generics: tt)*])?
-        {$($tt: tt)*} 
+        {$($tt: tt)*}
     ) => {
         $crate::meta_default_constructor!(
             [$func]
-            $ty
+            [::$($ty)::*]
+            $([$($generics)*])?
+            {$($tt)*} 
+            {} 
+        )
+    };
+
+    // Pad output
+    (
+        [$func: expr]
+        $($ty: ident)::*
+        $([$($generics: tt)*])?
+        {$($tt: tt)*}
+    ) => {
+        $crate::meta_default_constructor!(
+            [$func]
+            [$($ty)::*]
             $([$($generics)*])?
             {$($tt)*} 
             {} 
@@ -72,19 +88,41 @@ macro_rules! meta_default_constructor {
     // Nested structs
     (
         [$func: expr]
-        $ty: ident
+        [$($ty: tt)*]
         $([$($generics: tt)*])?
-        {$field: ident: $ty2: ident {$($fields: tt)*} $(, $($tt: tt)*)?} 
+        {$field: ident: ::$($ty2: ident)::* {$($fields: tt)*} $(, $($tt: tt)*)?} 
         {$($out_field: ident: $out_expr: expr),*} 
     ) => {
         $crate::meta_default_constructor!(
             [$func]
-            $ty
+            [$($ty)*]
             $([$($generics)*])?
             {$($($tt)*)?} 
             {$($out_field: $out_expr,)* $field: $crate::meta_default_constructor!(
                 [$func]
-                $ty2
+                [::$($ty2)::*]
+                {$($fields)*}
+                {}
+            )} 
+        )
+    };
+
+    // Nested structs
+    (
+        [$func: expr]
+        [$($ty: tt)*]
+        $([$($generics: tt)*])?
+        {$field: ident: $($ty2: ident)::* {$($fields: tt)*} $(, $($tt: tt)*)?} 
+        {$($out_field: ident: $out_expr: expr),*} 
+    ) => {
+        $crate::meta_default_constructor!(
+            [$func]
+            [$($ty)*]
+            $([$($generics)*])?
+            {$($($tt)*)?} 
+            {$($out_field: $out_expr,)* $field: $crate::meta_default_constructor!(
+                [$func]
+                [$($ty2)::*]
                 {$($fields)*}
                 {}
             )} 
@@ -94,21 +132,21 @@ macro_rules! meta_default_constructor {
     // Supports the box syntax
     (
         [$func: expr]
-        $ty: ident
+        [$($ty: tt)*]
         $([$($generics: tt)*])?
-        {$field: ident: box $ty2: ident {$($fields: tt)*} $(, $($tt: tt)*)?} 
+        {$field: ident: box $($ty2: ident)::* {$($fields: tt)*} $(, $($tt: tt)*)?} 
         {$($out_field: ident: $out_expr: expr),*} 
     ) => {
         $crate::meta_default_constructor!(
             [$func]
-            $ty
+            [$($ty)*]
             $([$($generics)*])?
             {$($($tt)*)?} 
             {$($out_field: $out_expr,)* $field: 
-                std::boxed::Box::new(
+                ::std::boxed::Box::new(
                     $crate::meta_default_constructor!(
                         [$func]
-                        $ty2
+                        [$($ty2)::*]
                         {$($fields)*}
                         {}
                     )
@@ -117,17 +155,36 @@ macro_rules! meta_default_constructor {
         )
     };
 
+    // Boxed normal expressions
+    (
+        [$func: expr]
+        [$($ty: tt)*]
+        $([$($generics: tt)*])?
+        {$field: ident: box $expr: expr $(, $($tt: tt)*)?} 
+        {$($out_field: ident: $out_expr: expr),*} 
+    ) => {
+        $crate::meta_default_constructor!(
+            [$func]
+            [$($ty)*]
+            $([$($generics)*])?
+            {$($($tt)*)?} 
+            {$($out_field: $out_expr,)* $field: 
+                ::std::boxed::Box::new($expr)
+            }
+        )
+    };
+
     // Normal expressions
     (
         [$func: expr]
-        $ty: ident
+        [$($ty: tt)*]
         $([$($generics: tt)*])?
         {$field: ident: $expr: expr $(, $($tt: tt)*)?} 
         {$($out_field: ident: $out_expr: expr),*} 
     ) => {
         $crate::meta_default_constructor!(
             [$func]
-            $ty
+            [$($ty)*]
             $([$($generics)*])?
             {$($($tt)*)?} 
             {$($out_field: $out_expr,)* $field: $expr} 
@@ -137,12 +194,12 @@ macro_rules! meta_default_constructor {
     // generate result
     (
         [$func: expr]
-        $ty: ident
+        [$($ty: tt)*]
         $([$($generics: tt)*])?
         {}
         {$($field: ident: $expr: expr),*} 
     ) => {
-        $ty $(::<$($generics)*>)? {
+        $($ty)* $(::<$($generics)*>)? {
             $($field: ($func)($expr),)*
             ..core::default::Default::default()
         }

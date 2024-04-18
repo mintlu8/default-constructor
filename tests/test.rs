@@ -1,17 +1,4 @@
-use std::collections::HashMap;
-
 use default_constructor::{construct, infer_construct, meta_default_constructor};
-
-
-#[derive(Default)]
-pub struct A {
-    a: String,
-    b: f32,
-    c: char,
-    d: Vec<u8>,
-    e: HashMap<Option<f32>, Box<char>>,
-    f: i32,
-}
 
 #[derive(Default)]
 pub struct B {
@@ -31,8 +18,24 @@ pub struct C<T> {
     t: T
 }
 
+mod a {
+    use std::collections::HashMap;
+
+    #[derive(Default)]
+    pub struct A{
+        pub a: String,
+        pub b: f32,
+        pub c: char,
+        pub d: Vec<u8>,
+        pub e: HashMap<Option<f32>, Box<char>>,
+        pub f: i32,
+    }
+}
+
+use a::A;
 
 fn do_thing() {
+
     let _: A = construct!(
         A {
             a: "hello",
@@ -44,6 +47,16 @@ fn do_thing() {
         A {
             a: "hello",
             b: 1i16,
+            e: std::collections::HashMap::new(),
+            f: false,
+        }
+    );
+
+    let _: a::A = infer_construct!(
+        a::A {
+            a: "hello",
+            b: 1i16,
+            e: ::std::collections::HashMap::new(),
             f: false,
         }
     );
@@ -58,6 +71,22 @@ fn do_thing() {
                 d: [1, 2, 3, 4]
             },
             f: box A {
+                b: 1,
+                d: [1, 2, 3, 4]
+            }
+        }
+    );
+
+    let _: B = infer_construct!(
+        B {
+            a: "hello",
+            b: 1i16,
+            e: A {
+                a: "hello",
+                b: 1,
+                d: [1, 2, 3, 4]
+            },
+            f: a::A {
                 b: 1,
                 d: [1, 2, 3, 4]
             }
