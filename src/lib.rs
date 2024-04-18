@@ -25,13 +25,15 @@ pub use convert::{InferInto, infer_into, StandardConverters};
 ///     [f32, String]
 ///     // fields
 ///     {
-///         // name value pairs like normal
-///         name: value,
+///         // name value pairs like normal structs
+///         //
 ///         // value is converted via the conversion function
+///         // name: Into::into(value),
 ///         name: value,
-///         // OtherStruct will be constructed using `meta_default_constructor!`
+///         // Nested structs will be recursively applied this macro
+///         // `OtherStruct` will be constructed using the same `meta_default_constructor!`
 ///         // use another syntax like wrapping it in parenthesis to ignore this
-///         name: OtherStruct {
+///         other: OtherStruct {
 ///             ..
 ///         },
 ///         // append [..Default::default()] at the end

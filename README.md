@@ -41,9 +41,8 @@ Student {
 }
 ```
 
-Note the macro is recursive on nested structs declarations,
-if the behavior is not desired, wrap nested structs in parenthesis
-or brackets.
+The macro is recursive on nested struct declarations,
+if the behavior is not desired, wrap nested structs in brackets.
 
 ```rust
 construct! {
@@ -77,8 +76,8 @@ thus failing the `infer_construct` macro.
 
 ## Missing Features
 
-- [x] Allow paths as type name.
-- [ ] Tuple structs support.
+- [x] Allow paths as type names.
+- [ ] Tuple struct support.
 
 ## Possible Features
 
