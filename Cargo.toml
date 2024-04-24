@@ -15,6 +15,9 @@ default construction and field conversion.
 
 keywords = ["constructor", "default", "macro"]
 
+[lib]
+doctest = false
+
 [features]
 default = ["std"]
 std = []

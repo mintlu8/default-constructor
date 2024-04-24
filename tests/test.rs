@@ -168,7 +168,7 @@ fn do_thing() {
 }
 
 
-
+#[allow(clippy::box_collection)]
 #[derive(Default)]
 pub struct E {
     a: Box<String>,
