@@ -407,6 +407,7 @@ macro_rules! meta_default_constructor {
         {}
         {$($field: ident: $expr: expr),*} 
     ) => {
+        #[allow(clippy::needless_update)]
         $($ty)* {
             $($field: ($func)($expr),)*
             ..core::default::Default::default()
@@ -422,6 +423,7 @@ macro_rules! meta_default_constructor {
         {}
         {$($field: ident: $expr: expr),*} 
     ) => {
+        #[allow(clippy::needless_update)]
         $($ty)* ::<$($generics)*> {
             $($field: ($func)($expr),)*
             ..core::default::Default::default()
