@@ -1,8 +1,5 @@
-[workspace]
-members = ["derive"]
-
 [package]
-name = "default-constructor"
+name = "default-constructor-macros"
 version = "0.3.0"
 edition = "2021"
 
@@ -12,18 +9,15 @@ license = "MIT OR Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/mintlu8/default-constructor"
 description = """
-Macros for creating pseudo-dsls that constructs structs through
-default construction and field conversion.
+Macros for default-constructor.
 """
 
 keywords = ["constructor", "default", "macro"]
 
 [lib]
-doctest = false
+proc-macro = true
 
 [dependencies]
-default-constructor-macros = { version = "0.3", path = "derive" }
-
-[features]
-default = ["std"]
-std = []
+proc-macro-error = "1.0.4"
+proc-macro2 = "1.0.85"
+quote = "1.0.36"
