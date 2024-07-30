@@ -69,10 +69,12 @@ pub mod effects {
 #[macro_export]
 macro_rules! construct {
     ($($tt: tt)*) => {
-        $crate::meta_default_constructor! {
-            {}
-            [::std::convert::Into::into]
-            $($tt)*
+        {
+            use $crate::effects::*;
+            $crate::meta_default_constructor! {
+                [::std::convert::Into::into]
+                $($tt)*
+            }
         }
     };
 }
@@ -101,10 +103,12 @@ macro_rules! construct {
 #[macro_export]
 macro_rules! infer_construct {
     ($($tt: tt)*) => {
-        $crate::meta_default_constructor! {
-            {}
-            [$crate::infer_into]
-            $($tt)*
+        {
+            use $crate::effects::*;
+            $crate::meta_default_constructor! {
+                [$crate::infer_into]
+                $($tt)*
+            }
         }
     };
 }

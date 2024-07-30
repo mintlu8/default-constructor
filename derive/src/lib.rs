@@ -10,11 +10,6 @@ use quote::quote;
 /// ```
 /// # /*
 /// meta_default_constructor!(
-///     // scoped imports, must be in braces `{..}`
-///     {
-///         import std::future::Future;
-///         import rand::prelude::*;
-///     }
 ///     // conversion function
 ///     [Into::into]
 ///     // struct name and optional generics
@@ -146,7 +141,6 @@ fn parse_struct_definition(convert_fn: &TokenStream, stream: TokenStream) -> Tok
                 let arr = convert_fn2 == "arr";
                 let iter = transform_field(convert_fn, parse_until_comma(&mut iter, []), arr);
                 result.extend(quote! {#field: {
-                    use ::default_constructor::effects::*;
                     #convert_fn2(#convert_fn(#(#iter)*))
                 },})
             }
@@ -168,47 +162,59 @@ fn parse_struct_definition(convert_fn: &TokenStream, stream: TokenStream) -> Tok
 
 fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
     let mut iter = tokens.into_iter();
-    let Some(imports) = iter.next() else {
-        abort!(Span::call_site(), "Missing imports.")
-    };
     let Some(TokenTree::Group(convert_fn)) = iter.next() else {
         abort!(Span::call_site(), "Missing conversion function.")
     };
     let convert_fn = convert_fn.stream();
-    let mut tokens: Vec<_> = iter.collect();
-    let Some(block) = tokens.pop() else {
-        abort!(Span::call_site(), "Missing type.")
-    };
-    match block {
-        TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-            let block = parse_delimited(&convert_fn, group.stream());
-            quote! {
-                {
-                    #[allow(unused_imports)]
-                    #[allow(clippy::needless_update)]
-                    {
-                        #imports
-                        #(#tokens)* (#block)
-                    }
-                }
+    let tokens: Vec<_> = iter.collect();
+    let mut turbofish_counter = 0;
+    let result: Vec<_> = tokens
+        .split(|x| match x {
+            TokenTree::Punct(p) if p.as_char() == ',' && turbofish_counter == 0 => true,
+            TokenTree::Punct(p) if p.as_char() == '<' => {
+                turbofish_counter += 1;
+                false
             }
-        }
-        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-            let block = parse_struct_definition(&convert_fn, group.stream());
-            quote! {
-                {
-                    #[allow(unused_imports)]
-                    #[allow(clippy::needless_update)]
-                    {
-                        #imports
-                        #(#tokens)* #block
-                    }
-                }
+            TokenTree::Punct(p) if p.as_char() == '>' => {
+                turbofish_counter -= 1;
+                false
             }
-        }
-        // Assume is a type and return `Default::default`.
-        _ => quote! {
-            <#(#tokens)* #block as ::core::default::Default>::default()
-        },
-    }
+            _ => false,
+        })
+        .filter_map(|segment| {
+            match segment {
+                [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
+                    let block = parse_delimited(&convert_fn, g.stream());
+                    Some(quote! {
+                        {
+                            #[allow(unused_imports)]
+                            #[allow(clippy::needless_update)]
+                            {
+                                #(#tt)* (#block)
+                            }
+                        }
+                    })
+                }
+
+                [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Brace => {
+                    let block = parse_struct_definition(&convert_fn, g.stream());
+                    Some(quote! {
+                        {
+                            #[allow(unused_imports)]
+                            #[allow(clippy::needless_update)]
+                            {
+                                #(#tt)* #block
+                            }
+                        }
+                    })
+                }
+                [] => None,
+                // Assume this is a type
+                tt => Some(quote! {
+                    <#(#tokens)* #(#tt)* as ::core::default::Default>::default()
+                }),
+            }
+        })
+        .collect();
+    quote! {(#(#result),*)}
 }

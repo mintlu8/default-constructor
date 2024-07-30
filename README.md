@@ -57,6 +57,23 @@ construct! {
 }
 ```
 
+## Tuple Construction
+
+To create a tuple, concatenate multiple structs with comma.
+
+```rust
+construct! {
+    Student {
+        name: "Timmy",
+        age: 10,
+    },
+    Son::<2> {
+        of: "Tommy"
+    },
+    Age(16),
+}
+```
+
 ## Meta Constructor
 
 The meta constructor macro allows you to define your own macro with
@@ -74,12 +91,11 @@ and `i64` -> `f64` in addition to the standard `From` and `Into`.
 If multiple conversion paths are found, the conversion will fail,
 thus failing the `infer_construct` macro.
 
-## Possible Features
+## ChangeLog
 
-- [x] Allow paths as type names.
-- [x] Generics parsing.
-- [ ] Generics parsing in nested constructors.
-- [ ] Tuple struct support.
+* 0.4
+  * `meta_default_constructor` no longer takes a list of imports as the first argument.
+  * `meta_default_constructor` can now create tuples by chaining with comma.
 
 ## License
 

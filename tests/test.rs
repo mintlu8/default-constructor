@@ -138,6 +138,9 @@ fn do_thing() {
         t: 69
     });
 
+    // Create tuples with comma
+    let _: (A, B) = infer_construct!(A {}, B {});
+
     // lifetimes and fields
     let _ = infer_construct!(Lifetime::<'static> {});
 
