@@ -183,6 +183,10 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
         })
         .filter_map(|segment| {
             match segment {
+                // ignore things wrapped in `()` or `{}`
+                [TokenTree::Group(g)] => {
+                    Some(quote! {#g})
+                }
                 [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
                     let block = parse_delimited(&convert_fn, g.stream());
                     Some(quote! {
@@ -195,7 +199,6 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
                         }
                     })
                 }
-
                 [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Brace => {
                     let block = parse_struct_definition(&convert_fn, g.stream());
                     Some(quote! {
@@ -211,7 +214,7 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
                 [] => None,
                 // Assume this is a type
                 tt => Some(quote! {
-                    <#(#tokens)* #(#tt)* as ::core::default::Default>::default()
+                    <#(#tt)* as ::core::default::Default>::default()
                 }),
             }
         })
