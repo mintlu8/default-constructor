@@ -47,6 +47,10 @@ pub fn meta_default_constructor(tokens: TokenStream1) -> TokenStream1 {
     meta_default_constructor2(tokens.into()).into()
 }
 
+fn ident_is_pascal(ident: &Ident) -> bool {
+    ident.to_string().chars().next().is_some_and(|c| c.is_uppercase()) 
+}
+
 fn parse_until_comma(
     stream: &mut IntoIter,
     pfx: impl IntoIterator<Item = TokenTree>,
@@ -187,17 +191,30 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
                 [TokenTree::Group(g)] => {
                     Some(quote! {#g})
                 }
-                [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
-                    let block = parse_delimited(&convert_fn, g.stream());
+                [tt @ .., TokenTree::Punct(p), TokenTree::Group(g)] if p.as_char() == '!' => {
                     Some(quote! {
-                        {
-                            #[allow(unused_imports)]
-                            #[allow(clippy::needless_update)]
-                            {
-                                #(#tt)* (#block)
-                            }
-                        }
+                        #(#tt)*! #g
                     })
+                }
+                [tt @ .., TokenTree::Ident(ident), TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
+                    // If is pascal case, we treat it as a struct or enum variant, so no `x: impl Into<T>`.
+                    // This makes it ok to insert `into`s.
+                    if ident_is_pascal(ident) {
+                        let block = parse_delimited(&convert_fn, g.stream());
+                        Some(quote! {
+                            {
+                                #[allow(unused_imports)]
+                                #[allow(clippy::needless_update)]
+                                {
+                                    #(#tt)* #ident (#block)
+                                }
+                            }
+                        })
+                    } else {
+                        Some(quote! {
+                            #(#tt)* #ident #g
+                        })
+                    }
                 }
                 [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Brace => {
                     let block = parse_struct_definition(&convert_fn, g.stream());
@@ -212,10 +229,7 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
                     })
                 }
                 [] => None,
-                // Assume this is a type
-                tt => Some(quote! {
-                    <#(#tt)* as ::core::default::Default>::default()
-                }),
+                tt => Some(quote! {#(#tt)*}),
             }
         })
         .collect();

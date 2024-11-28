@@ -97,6 +97,14 @@ thus failing the `infer_construct` macro.
   * `meta_default_constructor` no longer takes a list of imports as the first argument.
   * `meta_default_constructor` can now create tuples by chaining with comma.
 
+* 0.5
+
+  Made changes to fit `bevy 0.15`'s patterns.
+
+  * No longer treats `Ident` as `Ident::default()`.
+  * No longer treats snake case functions as structs.
+  * All non-struct patterns falls through the macro.
+
 ## License
 
 License under either of

@@ -173,3 +173,29 @@ fn test_effect() {
         }
     };
 }
+
+fn test_into(a: impl Into<String>) -> String{
+    a.into()
+}
+
+pub struct Str(String);
+
+fn test_tuple() {
+    let _ = infer_construct! {
+        C::<i64> {
+            a: "hello",
+            b: 1i16,
+            t: 69
+        },
+        E {
+            a: @boxed "The",
+            b: @rc "Rust",
+            c: @arc "Programming".to_owned(),
+            d: @some Cow::Borrowed("Language"),
+        },
+        // This would normally not be allowed if into is inserted.
+        test_into("Hello"),
+        // into is inserted.
+        Str("World!")
+    };
+}
