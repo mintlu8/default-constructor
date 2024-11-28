@@ -48,7 +48,11 @@ pub fn meta_default_constructor(tokens: TokenStream1) -> TokenStream1 {
 }
 
 fn ident_is_pascal(ident: &Ident) -> bool {
-    ident.to_string().chars().next().is_some_and(|c| c.is_uppercase()) 
+    ident
+        .to_string()
+        .chars()
+        .next()
+        .is_some_and(|c| c.is_uppercase())
 }
 
 fn parse_until_comma(
@@ -188,34 +192,59 @@ fn meta_default_constructor2(tokens: TokenStream) -> TokenStream {
         .filter_map(|segment| {
             match segment {
                 // ignore things wrapped in `()` or `{}`
-                [TokenTree::Group(g)] => {
-                    Some(quote! {#g})
-                }
+                [TokenTree::Group(g)] => Some(quote! {#g}),
+                // ignore macros
                 [tt @ .., TokenTree::Punct(p), TokenTree::Group(g)] if p.as_char() == '!' => {
                     Some(quote! {
                         #(#tt)*! #g
                     })
                 }
-                [tt @ .., TokenTree::Ident(ident), TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
-                    // If is pascal case, we treat it as a struct or enum variant, so no `x: impl Into<T>`.
+                [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Parenthesis => {
+                    let mut count = 0;
+                    let mut is_ty = false;
+
+                    // Look for the last ident, ignore turbofish, if uppercase, treat as a type
+                    // and apply `into`s. If lowercase, treat as function and forward as is.
+                    //
+                    // Does not fully parse the token stream, any error should be returned as is.
+                    for i in (0..tt.len()).rev() {
+                        match &tt[i] {
+                            TokenTree::Ident(ident) => {
+                                if count <= 0 {
+                                    is_ty = ident_is_pascal(ident);
+                                    break;
+                                }
+                            }
+                            TokenTree::Punct(p) if p.as_char() == '>' => {
+                                count += 1;
+                            }
+                            TokenTree::Punct(p) if p.as_char() == '<' => {
+                                count -= 1;
+                            }
+                            _ => (),
+                        }
+                    }
+
+                    // If is a type or enum variant, so no `x: impl Into<T>`.
                     // This makes it ok to insert `into`s.
-                    if ident_is_pascal(ident) {
+                    if is_ty {
                         let block = parse_delimited(&convert_fn, g.stream());
                         Some(quote! {
                             {
                                 #[allow(unused_imports)]
                                 #[allow(clippy::needless_update)]
                                 {
-                                    #(#tt)* #ident (#block)
+                                    #(#tt)* (#block)
                                 }
                             }
                         })
                     } else {
                         Some(quote! {
-                            #(#tt)* #ident #g
+                            #(#tt)* #g
                         })
                     }
                 }
+                // braces after something is only used for struct declaration
                 [tt @ .., TokenTree::Group(g)] if g.delimiter() == Delimiter::Brace => {
                     let block = parse_struct_definition(&convert_fn, g.stream());
                     Some(quote! {

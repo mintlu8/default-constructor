@@ -174,11 +174,20 @@ fn test_effect() {
     };
 }
 
-fn test_into(a: impl Into<String>) -> String{
+fn test_into(a: impl Into<String>) -> String {
     a.into()
 }
 
 pub struct Str(String);
+
+pub enum Generic<T> {
+    Str(String),
+    T(T),
+}
+
+pub fn generic<T>(input: T) -> T {
+    input
+}
 
 fn test_tuple() {
     let _ = infer_construct! {
@@ -196,6 +205,12 @@ fn test_tuple() {
         // This would normally not be allowed if into is inserted.
         test_into("Hello"),
         // into is inserted.
-        Str("World!")
+        Str("World!"),
+        // We must treat this as a type.
+        Generic::<i32>::Str("Generic"),
+        // We must treat this as a type.
+        Generic::Str::<i32>("Generic"),
+        // Do not treat this as a type.
+        generic::<String>("generic".into())
     };
 }

@@ -3,7 +3,7 @@ members = ["derive"]
 
 [package]
 name = "default-constructor"
-version = "0.5.0"
+version = "0.5.1"
 edition = "2021"
 
 authors = ["Mincong Lu <mintlux667@gmail.com>"]
@@ -22,7 +22,7 @@ keywords = ["constructor", "default", "macro"]
 doctest = false
 
 [dependencies]
-default-constructor-macros = { version = "0.5.0", path = "derive" }
+default-constructor-macros = { version = "0.5.1", path = "derive" }
 
 [features]
 default = ["std"]
